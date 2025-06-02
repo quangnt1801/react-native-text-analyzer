@@ -139,32 +139,6 @@ export function ExtractText({ input }: ExtractTextProps) {
     return isNaN(num) ? null : Math.round(num).toString();
   }
 
-  // const extractPhone = (
-  //   text: string
-  // ): { phone?: string; cleanedText: string } => {
-  //   const phoneRegexWithKeyword =
-  //     /(?:sđt|số điện thoại|điện thoại|phone|so dien thoai|dien thoai|SDT:|SĐT|dThoai|Gửi tới số điện thoại|Ship giúp|sdt|Sdt)[^\d]*(0[\d\*xX]{6,})/i;
-
-  //   const matchWithKeyword = text.match(phoneRegexWithKeyword);
-  //   if (matchWithKeyword) {
-  //     return {
-  //       phone: matchWithKeyword[1],
-  //       cleanedText: text.replace(matchWithKeyword[0], '').trim(),
-  //     };
-  //   }
-
-  //   const phoneRegex = /\b(0[\d\*xX]{6,})\b/;
-  //   const matchDirect = text.match(phoneRegex);
-  //   if (matchDirect) {
-  //     return {
-  //       phone: matchDirect[1],
-  //       cleanedText: text.replace(matchDirect[0], '').trim(),
-  //     };
-  //   }
-
-  //   return { cleanedText: text.trim() };
-  // };
-
   const extractPhone = (
     text: string
   ): { phone?: string; cleanedText: string } => {
@@ -460,11 +434,15 @@ export function ExtractText({ input }: ExtractTextProps) {
       'kl',
       'nặng',
       'Khối lượng',
+      'ký',
+      'Ký',
+      'Cân',
+      'cân',
     ];
 
     for (const keyword of weightKeywords) {
       const regex = new RegExp(
-        `\\b${keyword}[^\\d]*(\\d+(?:[.,]\\d+)?)(\\s?(kg|g|gram|gam|gr))?\\b`,
+        `\\b${keyword}[^\\d]*(\\d+(?:[.,]\\d+)?)(\\s?(kg|g|gram|gam|gr|ký|cân|lạng))?\\b`,
         'i'
       );
 
@@ -477,7 +455,8 @@ export function ExtractText({ input }: ExtractTextProps) {
       }
     }
 
-    const regexUnitOnly = /(?:^|\s)(\d+(?:[.,]\d+)?)(\s?(kg|g|gram|gam|gr))\b/i;
+    const regexUnitOnly =
+      /(?:^|\s)(\d+(?:[.,]\d+)?)(\s?(kg|g|gram|gam|gr|ký|cân|lạng))\b/i;
     const matchUnit = text.match(regexUnitOnly);
 
     if (matchUnit) {
@@ -503,28 +482,6 @@ export function ExtractText({ input }: ExtractTextProps) {
 
     return { cleanedWeight: text.trim() };
   }
-
-  //   function fIsValidPhoneNumber(phoneNumber: any): boolean {
-  //     const regex = /^0\d{9}$/;
-  //     return regex.test(phoneNumber);
-  //   }
-
-  //   const handleContinueCreate = (result: any) => {
-  //     if (result.phone) {
-  //       const isValidPhoneNumber = fIsValidPhoneNumber(result.phone);
-  //       if (!isValidPhoneNumber) {
-  //         setVisibleValid(true);
-  //         setMessageValid({
-  //           ...messageValid,
-  //           message: 'Số điện thoại không đúng định dạng',
-  //         });
-  //         return;
-  //       }
-  //     }
-  //     navigation.navigate(NavigationConstants.ORDER_CREATE_SCREEN, {
-  //       smartCreate: result,
-  //     });
-  //   };
 
   function extractNameFromText(
     cleanedTextName: any,

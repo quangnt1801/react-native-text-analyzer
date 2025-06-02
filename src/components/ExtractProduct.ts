@@ -53,6 +53,10 @@ const weightUnits = [
   'tấn',
   'yến',
   'lạng',
+  'ký',
+  'kilo',
+  'gam',
+  'cân',
 ];
 
 function isWeightInfo(text: string): boolean {
