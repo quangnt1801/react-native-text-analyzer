@@ -480,6 +480,16 @@ export function ExtractText({ input }: ExtractTextProps) {
       }
     }
 
+    const fallbackRegex =
+      /(?:giao|gửi|ship|nặng)?\s*(\d+(?:[.,]\d+)?)(\s?(kg|g|gram|gam|gr|ký|cân|lạng))\b/i;
+    const fallbackMatch = text.match(fallbackRegex);
+    if (fallbackMatch) {
+      const weightRaw = fallbackMatch[1] + (fallbackMatch[2] || '');
+      const weightValue = normalizeMoneyString(weightRaw);
+      const cleanedWeight = text.replace(fallbackMatch[0], '').trim();
+      return { weightRaw, weightValue, cleanedWeight };
+    }
+
     return { cleanedWeight: text.trim() };
   }
 

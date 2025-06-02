@@ -167,115 +167,6 @@ const productUnitWithoutNumberRegex = new RegExp(
   'iu'
 );
 
-// const locationNames = [
-//   'Bình Thạnh',
-//   'Tân Bình',
-//   'Quận 1',
-//   'Quận 2',
-//   'Quận 3',
-//   'Quận 4',
-//   'Quận 5',
-//   'Quận 6',
-//   'Quận 7',
-//   'Quận 8',
-//   'Quận 9',
-//   'Quận 10',
-//   'Quận 11',
-//   'Quận 12',
-//   'Thủ Đức',
-//   'Gò Vấp',
-//   'Phú Nhuận',
-//   'Bình Tân',
-//   'Tân Phú',
-//   'Hóc Môn',
-//   'Củ Chi',
-//   'Cần Giờ',
-//   'Nhà Bè',
-//   'Bình Chánh',
-//   'Hà Nội',
-//   'Hồ Chí Minh',
-//   'Đà Nẵng',
-//   'Hải Phòng',
-//   'Cần Thơ',
-//   'Đồng Nai',
-//   'Bình Dương',
-//   'Long An',
-//   'Tây Ninh',
-//   'An Giang',
-//   'Ba Ria',
-//   'Vũng Tàu',
-//   'Khánh Hòa',
-//   'Lâm Đồng',
-//   'Ninh Thuận',
-// ].join('|');
-
-// function isLocationName(text: string): boolean {
-//   const normalizedText = text.trim();
-//   const locationRegex = new RegExp(`^(?:${locationNames})$`, 'i');
-//   return locationRegex.test(normalizedText);
-// }
-
-// const addressKeywords =
-//   /(địa chỉ:|địa chỉ|dc|Dia chi|DC|gửi về|giao đến|giao tại|tới|về|Giao gấp|Chuyển tới|Gửi tới địa chỉ|gửi|tại|ở|đến|Giao hàng|đơn|Đơn|em|Em|Gửi|gửi|cho|Cho|ship|Ship|hàng này|Hàng này|cũ|Cũ)/gi;
-
-// function isInAddressContext(
-//   fullText: string,
-//   matchStart: number,
-//   matchEnd: number
-// ): boolean {
-//   const contextBefore = fullText.substring(
-//     Math.max(0, matchStart - 50),
-//     matchStart
-//   );
-//   const contextAfter = fullText.substring(
-//     matchEnd,
-//     Math.min(fullText.length, matchEnd + 50)
-//   );
-
-//   const addressRegex = new RegExp(`(?:${addressKeywords})`, 'i');
-//   const hasAddressKeywordBefore = addressRegex.test(contextBefore);
-//   const hasAddressKeywordAfter = addressRegex.test(contextAfter);
-
-//   const addressPatternBefore =
-//     /(?:\d+[a-zA-Z]?\s+\w+|P\.\d+|Q\.\w+|F\.\d+)/i.test(contextBefore);
-//   const addressPatternAfter = /(?:P\.\d+|Q\.\w+|F\.\d+)/i.test(contextAfter);
-
-//   return (
-//     hasAddressKeywordBefore ||
-//     hasAddressKeywordAfter ||
-//     addressPatternBefore ||
-//     addressPatternAfter
-//   );
-// }
-
-// const productEndOfSentenceRegex = new RegExp(
-//   String.raw`\.\s*([A-ZÀ-Ỹ][a-zA-ZÀ-ỹ]{2,50}(?:\s[A-ZÀ-Ỹ][a-zA-ZÀ-ỹ]{2,50})?)(?=\s*(?:với nha|nha|nhé|ạ|$))`,
-//   'iu'
-// );
-
-// function extractProductEndOfSentence(text: string): string {
-//   const match: any = productEndOfSentenceRegex.exec(text);
-
-//   if (match) {
-//     const potentialProduct = match[1].trim();
-//     const matchStart = match.index || 0;
-//     const matchEnd = matchStart + match[0].length;
-
-//     const isValid =
-//       !isLocationName(potentialProduct) &&
-//       !isInAddressContext(text, matchStart, matchEnd) &&
-//       !potentialProduct.match(
-//         /^(?:Không|Trong|Ngoài|Cùng|Giống|Khác|Này|Đó|Kia|Thế|Như|Vậy|Được|Cho|Của|Với|Từ|Tới|Về|Theo|Qua|Trên|Dưới|Sau|Trước)$/i
-//       ) &&
-//       potentialProduct.length >= 3 &&
-//       potentialProduct.length <= 50;
-
-//     return isValid ? potentialProduct : '';
-//   }
-
-//   return '';
-// }
-
 const productAfterPeriodRegex = new RegExp(
   String.raw`\.\s*([A-ZÀ-Ỹ][a-zA-ZÀ-ỹ\s]*(?:${productUnits.join(
     '|'
@@ -303,17 +194,6 @@ export function extractProductFromText(cleanedText: string): {
 
   if (!productMatch)
     productMatch = cleanedText.match(productUnitWithoutNumberRegex);
-
-  // if (!productMatch)
-  //   // productMatch = cleanedText.match(productEndOfSentenceRegex);
-  //   productMatch = extractProductEndOfSentence(cleanedText);
-
-  // let extractedProduct = '';
-  // if (productMatch) {
-  //   extractedProduct = productMatch[1]?.trim?.() ?? '';
-  // } else {
-  //   extractedProduct = extractProductEndOfSentence(cleanedText); // Trả về string trực tiếp
-  // }
 
   if (!productMatch) productMatch = cleanedText.match(productAfterPeriodRegex);
 
