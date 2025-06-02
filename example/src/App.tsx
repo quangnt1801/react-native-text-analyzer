@@ -1,12 +1,18 @@
+import { useEffect } from 'react';
 import { Text, View, StyleSheet } from 'react-native';
-import { multiply } from 'react-native-text-analyzer';
-
-const result = multiply(3, 7);
+import { ExtractText } from 'react-native-text-analyzer';
 
 export default function App() {
+  useEffect(() => {
+    const result = ExtractText({
+      input: 'Gửi son cho Thuỷ 0922001100, 103A Nguyễn Hữu Cảnh, Q. Bình Thạnh',
+    });
+    console.log(result);
+  }, []);
+
   return (
     <View style={styles.container}>
-      <Text>Result: {result}</Text>
+      <Text>Result: </Text>
     </View>
   );
 }
