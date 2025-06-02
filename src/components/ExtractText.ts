@@ -434,10 +434,6 @@ export function ExtractText({ input }: ExtractTextProps) {
       'kl',
       'nặng',
       'Khối lượng',
-      'ký',
-      'Ký',
-      'Cân',
-      'cân',
       'giao',
     ];
 
