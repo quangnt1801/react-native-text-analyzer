@@ -139,25 +139,56 @@ export function ExtractText({ input }: ExtractTextProps) {
     return isNaN(num) ? null : Math.round(num).toString();
   }
 
+  // const extractPhone = (
+  //   text: string
+  // ): { phone?: string; cleanedText: string } => {
+  //   const phoneRegexWithKeyword =
+  //     /(?:sđt|số điện thoại|điện thoại|phone|so dien thoai|dien thoai|SDT:|SĐT|dThoai|Gửi tới số điện thoại|Ship giúp|sdt|Sdt)[^\d]*(0[\d\*xX]{6,})/i;
+
+  //   const matchWithKeyword = text.match(phoneRegexWithKeyword);
+  //   if (matchWithKeyword) {
+  //     return {
+  //       phone: matchWithKeyword[1],
+  //       cleanedText: text.replace(matchWithKeyword[0], '').trim(),
+  //     };
+  //   }
+
+  //   const phoneRegex = /\b(0[\d\*xX]{6,})\b/;
+  //   const matchDirect = text.match(phoneRegex);
+  //   if (matchDirect) {
+  //     return {
+  //       phone: matchDirect[1],
+  //       cleanedText: text.replace(matchDirect[0], '').trim(),
+  //     };
+  //   }
+
+  //   return { cleanedText: text.trim() };
+  // };
+
   const extractPhone = (
     text: string
   ): { phone?: string; cleanedText: string } => {
+    // Regex với từ khóa, cho phép dấu phân cách . - khoảng trắng giữa các số
     const phoneRegexWithKeyword =
-      /(?:sđt|số điện thoại|điện thoại|phone|so dien thoai|dien thoai|SDT:|SĐT|dThoai|Gửi tới số điện thoại|Ship giúp|sdt|Sdt)[^\d]*(0[\d\*xX]{6,})/i;
+      /(?:sđt|số điện thoại|điện thoại|phone|so dien thoai|dien thoai|SDT:|SĐT|dThoai|Gửi tới số điện thoại|Ship giúp|sdt|Sdt)[^\d]*(0[\d.\-\s\*xX]{6,})/i;
 
-    const matchWithKeyword = text.match(phoneRegexWithKeyword);
+    const matchWithKeyword: any = text.match(phoneRegexWithKeyword);
     if (matchWithKeyword) {
+      // Loại bỏ dấu ., -, khoảng trắng trong số điện thoại
+      const phoneCleaned = matchWithKeyword[1].replace(/[.\-\s]/g, '');
       return {
-        phone: matchWithKeyword[1],
+        phone: phoneCleaned,
         cleanedText: text.replace(matchWithKeyword[0], '').trim(),
       };
     }
 
-    const phoneRegex = /\b(0[\d\*xX]{6,})\b/;
-    const matchDirect = text.match(phoneRegex);
+    // Regex không có từ khóa, cho phép dấu phân cách . - khoảng trắng
+    const phoneRegex = /\b(0[\d.\-\s\*xX]{6,})\b/;
+    const matchDirect: any = text.match(phoneRegex);
     if (matchDirect) {
+      const phoneCleaned = matchDirect[1].replace(/[.\-\s]/g, '');
       return {
-        phone: matchDirect[1],
+        phone: phoneCleaned,
         cleanedText: text.replace(matchDirect[0], '').trim(),
       };
     }
