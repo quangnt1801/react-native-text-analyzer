@@ -372,8 +372,14 @@ export function extractProductFromText(cleanedText: string): {
     value = value.replace(/\s*(với nha|nha|nhé|ạ|à)$/i, '');
 
     if (isValidProduct(value)) {
-      productText = value.replace(/\.*\s*không thu hộ\s*\.?$/i, '');
-      productValue = value.replace(/\.*\s*không thu hộ\s*\.?$/i, '');
+      productText = value.replace(
+        /\.*\s*không thu hộ|Không thu tiền|Không thu hộ|không thu tiền|không lấy tiền|Không lấy tiền\s*\.?$/i,
+        ''
+      );
+      productValue = value.replace(
+        /\.*\s*không thu hộ|Không thu tiền|Không thu hộ|không thu tiền|không lấy tiền|Không lấy tiền\s*\.?$/i,
+        ''
+      );
       textWithoutProduct = cleanedText.replace(productMatch[0], '');
     }
   }
