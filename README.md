@@ -5,20 +5,19 @@ React native ui component library
 ## Installation
 
 ```sh
-npm install react-native-text-analyzer
+npm install github:quangnt1801/react-native-text-analyzer
 ```
 
 ## Usage
 
-
 ```js
-import { multiply } from 'react-native-text-analyzer';
+import { ExtractText } from 'react-native-text-analyzer';
 
 // ...
-
-const result = multiply(3, 7);
+const result = ExtractText({
+  input: 'string',
+});
 ```
-
 
 ## Contributing
 
