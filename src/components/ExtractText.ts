@@ -539,7 +539,7 @@ export function ExtractText({ input }: ExtractTextProps) {
         /(?:^|\s)(?:ship tới|giao tới|chuyển tới|gửi tới)\s+((?:ông|bà|anh|chị|em|chú|cô|bác)\s+[\p{L}]{2,20})(?=\s*(?:,|\.|:|–|—|-|\n|$))/iu
       ) ||
       cleanedTextName.match(
-        /(?:^|\s)(?:cho|gửi cho|giao cho|ship cho)\s+([\p{L}\s]{1,30}?)(?=\s*[,:\.\n–—-])/iu
+        /(?:^|\s)(?:cho|gửi cho|giao cho|ship cho|Ship cho)\s+([\p{L}\s]{1,30}?)(?=\s*[,:\.\n–—-])/iu
       );
 
     let extractedName: string | null = null;
@@ -547,9 +547,11 @@ export function ExtractText({ input }: ExtractTextProps) {
     if (nameMatch) {
       let possibleName = nameMatch[1].trim();
       possibleName = possibleName.replace(
-        /\s+(nha|nhé|ạ|à|vậy|đó|này|tại||ở)$/i,
+        /\s+(nha|nhé|ạ|à|vậy|đó|này|tại|nè|ở)$/i,
         ''
       );
+
+      possibleName = possibleName.replace(/\b(cho|với)\b/giu, '');
 
       const isNotAddress =
         !new RegExp(`^(?:${locationKeywords})`, 'i').test(possibleName) &&
@@ -583,7 +585,7 @@ export function ExtractText({ input }: ExtractTextProps) {
         let possibleName = fallbackName[1].trim();
 
         possibleName = possibleName.replace(
-          /\s+(nha|nhé|ạ|à|vậy|đó|này|tại|ở)$/i,
+          /\s+(nha|nhé|ạ|à|vậy|đó|này|tại|ở|nè)$/i,
           ''
         );
 
@@ -729,7 +731,10 @@ export function ExtractText({ input }: ExtractTextProps) {
     if (addressMatch) {
       const valueAdd = cleanedText
         .replace(addressKeywords, '')
-        .replace(/\.*\s*không thu hộ\s*\.?$/i, '')
+        .replace(
+          /\.*\s*không thu hộ|Không thu tiền|Không thu hộ|không thu tiền|không lấy tiền|Không lấy tiền\s*\.?$/i,
+          ''
+        )
         .replace(/\s*(với nha|nha|nhé|ạ|à)$/i, '')
         .replace(/^[,.\s]+|[,.\s]+$/g, '')
         .replace(/^[:.,\s]+/, '')
@@ -747,7 +752,10 @@ export function ExtractText({ input }: ExtractTextProps) {
         const valueAdd = fallbackAddr[0]
           .replace(addressKeywords, '')
           .trim()
-          .replace(/\.*\s*không thu hộ\s*\.?$/i, '')
+          .replace(
+            /\.*\s*không thu hộ|Không thu tiền|Không thu hộ|không thu tiền|không lấy tiền|Không lấy tiền\s*\.?$/i,
+            ''
+          )
           .replace(/^[,.\s]+|[,.\s]+$/g, '')
           .replace(/^[:.,\s]+/, '');
         result.address = valueAdd;
