@@ -74,8 +74,8 @@ export function ExtractText({ input }: ExtractTextProps) {
       return Math.round(billion * 1_000_000_000 + extra).toString();
     }
 
-    const weightKgPattern = /^(\d+(?:[.,]?\d*)?)\s*kg$/;
-    const weightGPattern = /^(\d+(?:[.,]?\d*)?)\s*g$/;
+    const weightKgPattern = /^(\d+(?:[.,]?\d*)?)\s*kg|cân|ký$/;
+    const weightGPattern = /^(\d+(?:[.,]?\d*)?)\s*g|lạng$/;
 
     const matchKg: any = raw.match(weightKgPattern);
     if (matchKg) {
