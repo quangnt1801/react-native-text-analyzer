@@ -438,6 +438,7 @@ export function ExtractText({ input }: ExtractTextProps) {
       'Ký',
       'Cân',
       'cân',
+      'giao',
     ];
 
     for (const keyword of weightKeywords) {
@@ -478,16 +479,6 @@ export function ExtractText({ input }: ExtractTextProps) {
         const cleanedWeight = text.replace(matchUnit[0], '').trim();
         return { weightRaw, weightValue, cleanedWeight };
       }
-    }
-
-    const fallbackRegex =
-      /(?:giao|gửi|ship|nặng)?\s*(\d+(?:[.,]\d+)?)(\s?(kg|g|gram|gam|gr|ký|cân|lạng))\b/i;
-    const fallbackMatch = text.match(fallbackRegex);
-    if (fallbackMatch) {
-      const weightRaw = fallbackMatch[1] + (fallbackMatch[2] || '');
-      const weightValue = normalizeMoneyString(weightRaw);
-      const cleanedWeight = text.replace(fallbackMatch[0], '').trim();
-      return { weightRaw, weightValue, cleanedWeight };
     }
 
     return { cleanedWeight: text.trim() };
