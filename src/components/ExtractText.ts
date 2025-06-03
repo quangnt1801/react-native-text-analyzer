@@ -142,28 +142,27 @@ export function ExtractText({ input }: ExtractTextProps) {
 
   const extractPhone = (
     text: string
-  ): { phone?: string; cleanedText: string } => {
-    // Regex với từ khóa, cho phép dấu phân cách . - khoảng trắng giữa các số
+  ): { phone?: string; phoneOld?: string; cleanedText: string } => {
     const phoneRegexWithKeyword =
       /(?:sđt|số điện thoại|điện thoại|phone|so dien thoai|dien thoai|SDT:|SĐT|dThoai|Gửi tới số điện thoại|Ship giúp|sdt|Sdt)[^\d]*(0[\d.\-\s\*xX]{6,})/i;
 
     const matchWithKeyword: any = text.match(phoneRegexWithKeyword);
     if (matchWithKeyword) {
-      // Loại bỏ dấu ., -, khoảng trắng trong số điện thoại
       const phoneCleaned = matchWithKeyword[1].replace(/[.\-\s]/g, '');
       return {
         phone: phoneCleaned,
+        phoneOld: matchWithKeyword[1],
         cleanedText: text.replace(matchWithKeyword[0], '').trim(),
       };
     }
 
-    // Regex không có từ khóa, cho phép dấu phân cách . - khoảng trắng
     const phoneRegex = /\b(0[\d.\-\s\*xX]{6,})\b/;
     const matchDirect: any = text.match(phoneRegex);
     if (matchDirect) {
       const phoneCleaned = matchDirect[1].replace(/[.\-\s]/g, '');
       return {
         phone: phoneCleaned,
+        phoneOld: matchDirect[1],
         cleanedText: text.replace(matchDirect[0], '').trim(),
       };
     }
@@ -629,8 +628,12 @@ export function ExtractText({ input }: ExtractTextProps) {
     const phoneResult = extractPhone(cleanedText);
     if (phoneResult.phone) {
       result.phone = phoneResult.phone;
-      resultValue.phone = phoneResult.phone;
+
       cleanedText = phoneResult.cleanedText;
+    }
+
+    if (phoneResult.phoneOld) {
+      resultValue.phone = phoneResult.phoneOld;
     }
 
     const { codRaw, codValue, cleanedCod } =
