@@ -658,7 +658,6 @@ export function ExtractText({ input }: ExtractTextProps) {
     if (valueRaw) {
       resultValue.value = valueRaw;
     }
-
     const { cleanedTextName, value } = extractNameFromText(
       cleanedText,
       result,
@@ -742,7 +741,13 @@ export function ExtractText({ input }: ExtractTextProps) {
       resultValue.address = valueAdd;
       cleanedText = cleanedText.replace(addressMatch[1], '');
     } else {
-      const fallbackAddr = cleanedText.match(/\d{1,4}[\/\d\s\w,.\\\-]+/u);
+      const fallbackAddr =
+        cleanedText.match(
+          /\d{1,4}[\s\p{L}\d\/\\.,\-]{3,}(quận\s*\d+|Q\.?\s*\d+|Q\d+|phường\s*\d+|P\.?\s*\d+|P\d+|tp\.?|thành phố|hcm|tân phú|tân bình|gò vấp|hà nội|đà nẵng|huế|cần thơ|sài gòn)/giu
+        ) || cleanedText.match(/\d{1,4}[\/\d\s\p{L},\-\.]{3,}/u);
+
+      console.log('fallbackAddr', fallbackAddr);
+
       if (fallbackAddr) {
         const valueAdd = fallbackAddr[0]
           .replace(addressKeywords, '')
@@ -757,13 +762,6 @@ export function ExtractText({ input }: ExtractTextProps) {
         resultValue.address = valueAdd;
       }
     }
-
-    // if (type === undefined) {
-    //   handleContinueCreate(result);
-    // }
-
-    // setValueRegex(resultValue);
-    // setInputValue(input);
 
     return {
       result: result,

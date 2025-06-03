@@ -151,6 +151,10 @@ const productUnits = [
   'hạt',
   'Hộp',
   'trái',
+  'quần',
+  'áo',
+  'khăn',
+  'thúng',
 ];
 
 const productUnitRegex = new RegExp(
@@ -173,6 +177,19 @@ const productAfterPeriodRegex = new RegExp(
   )})[a-zA-ZÀ-ỹ\s]*)(?=\s*(?:${commonFieldKeywords}|,|\.|$))`,
   'iu'
 );
+
+function isInvalidProductPhrase(text: string): boolean {
+  const normalized = text.trim().toLowerCase();
+  const patterns = [
+    /^nha\s+\w+$/, // "nha a", "nha anh", "nha bạn"
+    /^\w+\s+nha$/, // "a nha", "anh nha"
+    /^nha$/, // "nha"
+    /^ạ$/, // chỉ "ạ"
+    /^[a-z]{1,3}$/, // các từ rất ngắn, thường là không hợp lý cho tên sản phẩm
+  ];
+
+  return patterns.some((regex) => regex.test(normalized));
+}
 
 export function extractProductFromText(cleanedText: string): {
   productText: string;
@@ -224,9 +241,10 @@ export function extractProductFromText(cleanedText: string): {
   if (!productMatch) {
     const weightMatch: any = cleanedText.match(productAfterWeightRegex);
     if (weightMatch) {
-      const productName = weightMatch[2].trim();
+      let productName = weightMatch[2].trim();
+      productName = productName.replace(/\s*(với nha|nha|nhé|ạ|à)$/i, '');
 
-      if (isValidProduct(productName)) {
+      if (isValidProduct(productName) && !isInvalidProductPhrase(productName)) {
         productText = productName;
         productValue = productName;
 
