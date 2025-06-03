@@ -78,6 +78,7 @@ export function ExtractText({ input }: ExtractTextProps) {
     const weightGPattern = /^(\d+(?:[.,]?\d*)?)\s*g|lạng$/;
 
     const matchKg: any = raw.match(weightKgPattern);
+
     if (matchKg) {
       const value = parseFloat(matchKg[1].replace(',', '.'));
       return Math.round(value * 1000).toString();
@@ -421,6 +422,128 @@ export function ExtractText({ input }: ExtractTextProps) {
     return { cleanedValue: text };
   }
 
+  // function extractWeight(text: string): {
+  //   weightRaw?: string;
+  //   weightValue?: string | null;
+  //   cleanedWeight: string;
+  // } {
+  //   const weightKeywords = [
+  //     'khối lượng',
+  //     'trọng lượng',
+  //     'cân nặng',
+  //     'KL',
+  //     'kl',
+  //     'nặng',
+  //     'Khối lượng',
+  //     'giao',
+  //   ];
+
+  //   for (const keyword of weightKeywords) {
+  //     const regex = new RegExp(
+  //       `\\b${keyword}[^\\d]*(\\d+(?:[.,]\\d+)?)(\\s?(kg|g|gram|gam|gr|ký|cân|lạng))?\\b`,
+  //       'i'
+  //     );
+
+  //     const match = text.match(regex);
+  //     if (match) {
+  //       const weightRaw = match[1] + (match[2] || '');
+  //       const weightValue = normalizeMoneyString(weightRaw);
+  //       const cleanedWeight = text.replace(match[0], '').trim();
+  //       return { weightRaw, weightValue, cleanedWeight };
+  //     }
+  //   }
+
+  //   const regexUnitOnly =
+  //     /(?:^|\s)(\d+(?:[.,]\d+)?)(\s?(kg|g|gram|gam|gr|ký|cân|lạng))\b/i;
+  //   const matchUnit = text.match(regexUnitOnly);
+
+  //   if (matchUnit) {
+  //     const index = matchUnit.index ?? -1;
+  //     const before = text.slice(Math.max(0, index - 4), index);
+  //     const invalidPrefixes = ['P.', 'Q.', 'H.', 'p.', 'q.', 'h.', '/', '\\'];
+  //     const isInvalid = invalidPrefixes.some((prefix) =>
+  //       before.endsWith(prefix)
+  //     );
+
+  //     if (!isInvalid) {
+  //       const weightRaw = matchUnit[1] + (matchUnit[2] || '');
+  //       const weightValue = normalizeMoneyString(weightRaw);
+  //       const cleanedWeight = text.replace(matchUnit[0], '').trim();
+  //       return { weightRaw, weightValue, cleanedWeight };
+  //     } else {
+  //       const weightRaw = matchUnit[1] + (matchUnit[2] || '');
+  //       const weightValue = normalizeMoneyString(weightRaw);
+  //       const cleanedWeight = text.replace(matchUnit[0], '').trim();
+  //       return { weightRaw, weightValue, cleanedWeight };
+  //     }
+  //   }
+
+  //   return { cleanedWeight: text.trim() };
+  // }
+
+  // function extractWeight(text: string): {
+  //   weightRaw?: string;
+  //   weightValue?: string | null;
+  //   cleanedWeight: string;
+  // } {
+  //   const weightKeywords = [
+  //     'khối lượng',
+  //     'trọng lượng',
+  //     'cân nặng',
+  //     'KL',
+  //     'kl',
+  //     'nặng',
+  //     'Khối lượng',
+  //     // 'giao',
+  //   ];
+
+  //   for (const keyword of weightKeywords) {
+  //     const regex = new RegExp(
+  //       `\\b${keyword}[^\\d]*(\\d+(?:[.,]\\d+)?)(\\s?(kg|g|gram|gam|gr|ký|cân|lạng))?\\b`,
+  //       'i',
+  //     );
+
+  //     const match = text.match(regex);
+  //     if (match) {
+  //       const weightRaw = match[1] + (match[2] || '');
+  //       const weightValue = normalizeMoneyString(weightRaw);
+  //       const cleanedWeight = text.replace(match[0], '').trim();
+  //       return {weightRaw, weightValue, cleanedWeight};
+  //     }
+  //   }
+
+  //   const regexUnitOnly =
+  //   /(?:^|\s)(\d+(?:[.,]\d+)?)(\s?(kg|g|gram|gam|gr|ký|cân|lạng))(?=\s|[.,;!?]|$)/i;
+
+  // const regexUnitAfterVerb =
+  //   /\b(?:giao|ship|gửi|chuyển|mua|bán)\s+(\d+(?:[.,]\d+)?)(\s?(kg|g|gram|gam|gr|ký|cân|lạng))(?=\s|[.,;!?]|$)/i;
+
+  //   const matchUnit =
+  //     text.match(regexUnitOnly) || text.match(regexUnitAfterVerb);
+
+  //   if (matchUnit) {
+  //     const index = matchUnit.index ?? -1;
+  //     const before = text.slice(Math.max(0, index - 4), index);
+  //     const invalidPrefixes = ['P.', 'Q.', 'H.', 'p.', 'q.', 'h.', '/', '\\'];
+  //     const isInvalid = invalidPrefixes.some(prefix => before.endsWith(prefix));
+
+  //     if (!isInvalid) {
+  //       const weightRaw =
+  //         matchUnit[1] + (matchUnit[2] || '') + (matchUnit[3] || '');
+  //       const weightValue = normalizeMoneyString(weightRaw);
+  //       const cleanedWeight = text.replace(matchUnit[0], '').trim();
+  //       return {weightRaw, weightValue, cleanedWeight};
+  //     } else {
+  //       const weightRaw = matchUnit[1] + (matchUnit[2] || '');
+  //       const weightValue = normalizeMoneyString(weightRaw);
+  //       const cleanedWeight = text.replace(matchUnit[0], '').trim();
+  //       return {weightRaw, weightValue, cleanedWeight};
+  //     }
+  //   }
+
+  //   return {cleanedWeight: text.trim()};
+  // }
+
   function extractWeight(text: string): {
     weightRaw?: string;
     weightValue?: string | null;
@@ -434,7 +557,7 @@ export function ExtractText({ input }: ExtractTextProps) {
       'kl',
       'nặng',
       'Khối lượng',
-      'giao',
+      // 'giao',
     ];
 
     for (const keyword of weightKeywords) {
@@ -453,19 +576,25 @@ export function ExtractText({ input }: ExtractTextProps) {
     }
 
     const regexUnitOnly =
-      /(?:^|\s)(\d+(?:[.,]\d+)?)(\s?(kg|g|gram|gam|gr|ký|cân|lạng))\b/i;
-    const matchUnit = text.match(regexUnitOnly);
+      /(?:^|\s)(\d+(?:[.,]\d+)?)(\s*)(kg|g|gram|gam|gr|ký|cân|lạng)(?!\w)/i;
+
+    const regexUnitAfterVerb =
+      /\b(?:giao|ship|gửi|chuyển|mua|bán)\s+(\d+(?:[.,]\d+)?)(\s*)(kg|g|gram|gam|gr|ký|cân|lạng)(?!\w)/i;
+
+    const matchUnit =
+      text.match(regexUnitOnly) || text.match(regexUnitAfterVerb);
 
     if (matchUnit) {
       const index = matchUnit.index ?? -1;
       const before = text.slice(Math.max(0, index - 4), index);
-      const invalidPrefixes = ['P.', 'Q.', 'p.', 'q.', '/', '\\'];
+      const invalidPrefixes = ['P.', 'Q.', 'H.', 'p.', 'q.', 'h.', '/', '\\'];
       const isInvalid = invalidPrefixes.some((prefix) =>
         before.endsWith(prefix)
       );
 
       if (!isInvalid) {
-        const weightRaw = matchUnit[1] + (matchUnit[2] || '');
+        const weightRaw =
+          matchUnit[1] + (matchUnit[2] || '') + (matchUnit[3] || '');
         const weightValue = normalizeMoneyString(weightRaw);
         const cleanedWeight = text.replace(matchUnit[0], '').trim();
         return { weightRaw, weightValue, cleanedWeight };
