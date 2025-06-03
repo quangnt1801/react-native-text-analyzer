@@ -422,128 +422,6 @@ export function ExtractText({ input }: ExtractTextProps) {
     return { cleanedValue: text };
   }
 
-  // function extractWeight(text: string): {
-  //   weightRaw?: string;
-  //   weightValue?: string | null;
-  //   cleanedWeight: string;
-  // } {
-  //   const weightKeywords = [
-  //     'khối lượng',
-  //     'trọng lượng',
-  //     'cân nặng',
-  //     'KL',
-  //     'kl',
-  //     'nặng',
-  //     'Khối lượng',
-  //     'giao',
-  //   ];
-
-  //   for (const keyword of weightKeywords) {
-  //     const regex = new RegExp(
-  //       `\\b${keyword}[^\\d]*(\\d+(?:[.,]\\d+)?)(\\s?(kg|g|gram|gam|gr|ký|cân|lạng))?\\b`,
-  //       'i'
-  //     );
-
-  //     const match = text.match(regex);
-  //     if (match) {
-  //       const weightRaw = match[1] + (match[2] || '');
-  //       const weightValue = normalizeMoneyString(weightRaw);
-  //       const cleanedWeight = text.replace(match[0], '').trim();
-  //       return { weightRaw, weightValue, cleanedWeight };
-  //     }
-  //   }
-
-  //   const regexUnitOnly =
-  //     /(?:^|\s)(\d+(?:[.,]\d+)?)(\s?(kg|g|gram|gam|gr|ký|cân|lạng))\b/i;
-  //   const matchUnit = text.match(regexUnitOnly);
-
-  //   if (matchUnit) {
-  //     const index = matchUnit.index ?? -1;
-  //     const before = text.slice(Math.max(0, index - 4), index);
-  //     const invalidPrefixes = ['P.', 'Q.', 'H.', 'p.', 'q.', 'h.', '/', '\\'];
-  //     const isInvalid = invalidPrefixes.some((prefix) =>
-  //       before.endsWith(prefix)
-  //     );
-
-  //     if (!isInvalid) {
-  //       const weightRaw = matchUnit[1] + (matchUnit[2] || '');
-  //       const weightValue = normalizeMoneyString(weightRaw);
-  //       const cleanedWeight = text.replace(matchUnit[0], '').trim();
-  //       return { weightRaw, weightValue, cleanedWeight };
-  //     } else {
-  //       const weightRaw = matchUnit[1] + (matchUnit[2] || '');
-  //       const weightValue = normalizeMoneyString(weightRaw);
-  //       const cleanedWeight = text.replace(matchUnit[0], '').trim();
-  //       return { weightRaw, weightValue, cleanedWeight };
-  //     }
-  //   }
-
-  //   return { cleanedWeight: text.trim() };
-  // }
-
-  // function extractWeight(text: string): {
-  //   weightRaw?: string;
-  //   weightValue?: string | null;
-  //   cleanedWeight: string;
-  // } {
-  //   const weightKeywords = [
-  //     'khối lượng',
-  //     'trọng lượng',
-  //     'cân nặng',
-  //     'KL',
-  //     'kl',
-  //     'nặng',
-  //     'Khối lượng',
-  //     // 'giao',
-  //   ];
-
-  //   for (const keyword of weightKeywords) {
-  //     const regex = new RegExp(
-  //       `\\b${keyword}[^\\d]*(\\d+(?:[.,]\\d+)?)(\\s?(kg|g|gram|gam|gr|ký|cân|lạng))?\\b`,
-  //       'i',
-  //     );
-
-  //     const match = text.match(regex);
-  //     if (match) {
-  //       const weightRaw = match[1] + (match[2] || '');
-  //       const weightValue = normalizeMoneyString(weightRaw);
-  //       const cleanedWeight = text.replace(match[0], '').trim();
-  //       return {weightRaw, weightValue, cleanedWeight};
-  //     }
-  //   }
-
-  //   const regexUnitOnly =
-  //   /(?:^|\s)(\d+(?:[.,]\d+)?)(\s?(kg|g|gram|gam|gr|ký|cân|lạng))(?=\s|[.,;!?]|$)/i;
-
-  // const regexUnitAfterVerb =
-  //   /\b(?:giao|ship|gửi|chuyển|mua|bán)\s+(\d+(?:[.,]\d+)?)(\s?(kg|g|gram|gam|gr|ký|cân|lạng))(?=\s|[.,;!?]|$)/i;
-
-  //   const matchUnit =
-  //     text.match(regexUnitOnly) || text.match(regexUnitAfterVerb);
-
-  //   if (matchUnit) {
-  //     const index = matchUnit.index ?? -1;
-  //     const before = text.slice(Math.max(0, index - 4), index);
-  //     const invalidPrefixes = ['P.', 'Q.', 'H.', 'p.', 'q.', 'h.', '/', '\\'];
-  //     const isInvalid = invalidPrefixes.some(prefix => before.endsWith(prefix));
-
-  //     if (!isInvalid) {
-  //       const weightRaw =
-  //         matchUnit[1] + (matchUnit[2] || '') + (matchUnit[3] || '');
-  //       const weightValue = normalizeMoneyString(weightRaw);
-  //       const cleanedWeight = text.replace(matchUnit[0], '').trim();
-  //       return {weightRaw, weightValue, cleanedWeight};
-  //     } else {
-  //       const weightRaw = matchUnit[1] + (matchUnit[2] || '');
-  //       const weightValue = normalizeMoneyString(weightRaw);
-  //       const cleanedWeight = text.replace(matchUnit[0], '').trim();
-  //       return {weightRaw, weightValue, cleanedWeight};
-  //     }
-  //   }
-
-  //   return {cleanedWeight: text.trim()};
-  // }
-
   function extractWeight(text: string): {
     weightRaw?: string;
     weightValue?: string | null;
@@ -846,7 +724,7 @@ export function ExtractText({ input }: ExtractTextProps) {
       const valueAdd = cleanedText
         .replace(addressKeywords, '')
         .replace(
-          /\.*\s*không thu hộ|Không thu tiền|Không thu hộ|không thu tiền|không lấy tiền|Không lấy tiền\s*\.?$/i,
+          /\.*\s*cho|giao|giao cho|không thu hộ|Không thu tiền|Không thu hộ|không thu tiền|không lấy tiền|Không lấy tiền\s*\.?$/i,
           ''
         )
         .replace(/\s*(với nha|nha|nhé|ạ|à)$/i, '')
@@ -867,7 +745,7 @@ export function ExtractText({ input }: ExtractTextProps) {
           .replace(addressKeywords, '')
           .trim()
           .replace(
-            /\.*\s*không thu hộ|Không thu tiền|Không thu hộ|không thu tiền|không lấy tiền|Không lấy tiền\s*\.?$/i,
+            /\.*\s*cho|giao|giao cho|không thu hộ|Không thu tiền|Không thu hộ|không thu tiền|không lấy tiền|Không lấy tiền\s*\.?$/i,
             ''
           )
           .replace(/^[,.\s]+|[,.\s]+$/g, '')
