@@ -195,6 +195,7 @@ export function ExtractText({ input }: ExtractTextProps) {
       'i'
     );
     const codSpecialMatch: any = text.match(codSpecialPattern);
+
     if (codSpecialMatch) {
       const base = parseInt(codSpecialMatch[2]);
       const extraWord: any = codSpecialMatch[3];
@@ -486,6 +487,19 @@ export function ExtractText({ input }: ExtractTextProps) {
     return { cleanedWeight: text.trim() };
   }
 
+  const nameNegativePatterns = [
+    /nhanh.*(giúp|giùm)/i,
+    /giúp.*(em|e|mình)/i,
+    /(em|e|mình)\s*(nha|nhé|vs|với|giúp|giùm)/i,
+    /ship\s+(nhanh|luôn|sớm)/i,
+    /(giao|ship)\s+(nhanh|liền)/i,
+    /mình\s+(nhé|nha|vs|với)/i,
+    /(giùm|giúp)\s+(e|em|mình)/i,
+    /với\s+(mình|em|e)/i,
+    /gấp\s+giúp/i,
+    /\b(ok|vs|với|nha|nhé)\b/i,
+  ];
+
   function extractNameFromText(
     cleanedTextName: any,
     result: any,
@@ -534,7 +548,6 @@ export function ExtractText({ input }: ExtractTextProps) {
       );
 
     let extractedName: string | null = null;
-
     if (nameMatch) {
       let possibleName = nameMatch[1].trim();
       possibleName = possibleName.replace(
@@ -558,11 +571,21 @@ export function ExtractText({ input }: ExtractTextProps) {
 
       const nameBlacklist = ['tới', 'đến', 'ở', 'tại'];
 
+      const isBlacklistedName = nameNegativePatterns.some((re) =>
+        re.test(possibleName)
+      );
+
       if (
         nameBlacklist.includes(possibleName.toLowerCase()) ||
         /^[a-z\s]+$/.test(possibleName) || // toàn chữ thường — có thể là mô tả
-        !isNotAddress
+        !isNotAddress ||
+        isBlacklistedName
       ) {
+        if (isBlacklistedName) {
+          cleanedTextName = cleanedTextName.replace(nameMatch[0], '');
+        }
+        console.log('cleanedTextNamecleanedTextName', cleanedTextName);
+
         extractedName = null;
       } else {
         extractedName = possibleName;
@@ -636,6 +659,8 @@ export function ExtractText({ input }: ExtractTextProps) {
       resultValue.phone = phoneResult.phoneOld;
     }
 
+    console.log('ddasdas-Phone', cleanedText);
+
     const { codRaw, codValue, cleanedCod } =
       extractCodWithNormalizedValue(cleanedText);
     if (codValue) {
@@ -646,6 +671,8 @@ export function ExtractText({ input }: ExtractTextProps) {
     if (codRaw) {
       resultValue.cod = codRaw;
     }
+
+    console.log('ddasdas-COD', cleanedText);
 
     const { valueRaw, valueValue, cleanedValue } =
       extractValueWithNormalizedValue(cleanedText);
@@ -669,6 +696,12 @@ export function ExtractText({ input }: ExtractTextProps) {
       cleanedText = cleanedTextName;
     }
 
+    if (cleanedTextName) {
+      cleanedText = cleanedTextName;
+    }
+
+    console.log('ddasdas-value', cleanedTextName);
+
     const { productText, productValue, textWithoutProduct } =
       extractProductFromText(cleanedText);
 
@@ -679,6 +712,8 @@ export function ExtractText({ input }: ExtractTextProps) {
     if (productValue) {
       resultValue.product = productValue;
     }
+
+    console.log('ddasdas-Product', cleanedText);
 
     if (textWithoutProduct) {
       cleanedText = textWithoutProduct;
@@ -701,10 +736,15 @@ export function ExtractText({ input }: ExtractTextProps) {
       resultValue.weight = weightRaw;
     }
 
+    console.log('=======================', cleanedText);
+
     const addressKeywords =
-      /(địa chỉ:|địa chỉ|dc|Dia chi|DC|gửi về|giao đến|giao tại|tới|về|Giao gấp|Chuyển tới|Gửi tới địa chỉ|gửi|tại|ở|đến|Giao hàng|đơn|Đơn|em|Em|Gửi|gửi|cho|Cho|ship|Ship|hàng này|Hàng này|cũ|Cũ)/gi;
+      /(chuyển đến |giao đến|giao tại|tới|về|gửi về|gửi tới|ship|ship đến|ship cho|tại|đến|địa chỉ:|địa chỉ|gửi|giao hàng|nhà |số )/gi;
 
     const keywordMatch = cleanedText.match(addressKeywords);
+
+    console.log('keywordMatchkeywordMatch', keywordMatch);
+
     if (keywordMatch) {
       const lastKeyword: any = keywordMatch[keywordMatch.length - 1];
       const keywordIndex = cleanedText
@@ -717,16 +757,57 @@ export function ExtractText({ input }: ExtractTextProps) {
         .trim();
     }
 
+    // const addressMatch: any =
+    //   cleanedText.match(
+    //     /(\d{1,4}[\/\d\s\w,.\\\-]*?(quận|Q\.?|phường|P\.?|tp\.?|thành phố|hcm|hà nội|huế|cần thơ|sài gòn)[\p{L}\d\s,./\-]*)/giu
+    //   ) || cleanedText.match(/(\d{1,4}[\/\d\s\p{L},\-\.]{3,})/u);
+
     const addressMatch: any =
       cleanedText.match(
-        /(\d{1,4}[\/\d\s\w,.\\\-]*?(quận|Q\.?|phường|P\.?|tp\.?|thành phố|hcm|hà nội|huế|cần thơ|sài gòn)[\p{L}\d\s,./\-]*)/giu
+        /(\d{1,4}[\/\d\s\w,.\\\-]*?(quận|Q\.?|phường|P\.?|P\d{1,2}|Phường\s*\d+|tp\.?|thành phố|hcm|hà nội|huế|cần thơ|sài gòn)[\p{L}\d\s,./\-]*)/giu
       ) || cleanedText.match(/(\d{1,4}[\/\d\s\p{L},\-\.]{3,})/u);
 
     if (addressMatch) {
-      const valueAdd = cleanedText
-        .replace(addressKeywords, '')
+      // const valueAdd = cleanedText
+      //   .replace(addressKeywords, '')
+      //   .replace(
+      //     /\.*\s*cho|giao|giao cho|không thu hộ|Không thu tiền|Không thu hộ|không thu tiền|không lấy tiền|Không lấy tiền|để\s*\.?$/i,
+      //     ''
+      //   )
+      //   .replace(/\bđơn(?: số)?\s*\d*\b\s*/i, '')
+      //   .replace(/\bcod\b.*$/i, '')
+      //   .replace(/\s*(với nha|nha|nhé|ạ|à)$/i, '')
+      //   .replace(/^[,.\s]+|[,.\s]+$/g, '')
+      //   .replace(/^[:.,\s]+/, '')
+      //   .replace(/^[–—\-_~`!@#$%^&*()+=\[\]{}|\\:";'<>?,.\/\s]+/, '')
+      //   .replace(/^[–—\-]{1,}\s*[–—\-]{1,}\s*/, '')
+      //   .replace(/^[–—\-]\s*[–—\-]\s*/, '')
+      //   .replace(
+      //     /\s*(sdt| e | a | c |cod|bác|để lại|nhe|nhá|nhé|nè|gửi lại|gửi tới|đang|bận|nhờ|liên hệ|gọi|nhé|nha|giùm|giúp|bảo vệ|lấy giùm|nhà|gần|chợ|phòng|kho|bãi|lấy hộ|kêu|bấm chuông|nhận dùm|thanh toán|trước khi|sau khi|gặp|người nhà|giao ban ngày|giao tối|giao giúp).*$/i,
+      //     ''
+      //   )
+      //   .trim()
+      //   .replace(/[.,\s]+$/, '')
+      //   .trim();
+      // const valueNew = valueAdd
+      //   .replace(/\bđơn(?: số)?\s*\d*\b\s*/i, '')
+      //   .replace(/\bcod\b.*$/i, '')
+      //   .trim();
+
+      // result.address = valueNew;
+      // resultValue.address = valueNew;\
+      let valueAdd = cleanedText.replace(addressKeywords, '');
+
+      // // Xoá "đơn số 6" hoặc "đơn 6" hoặc "đơn số" hoặc "đơn"
+      // valueAdd = valueAdd.replace(/(?:^|[\s,])đơn số(?=\s*\d)/i, ''); // xoá "đơn số" khi phía sau là số
+      // valueAdd = valueAdd.replace(/(?:^|[\s,])đơn(?! số)/i, '');
+
+      // Xoá "cod ..." đến hết câu
+      // valueAdd = valueAdd.replace(/\bcod\b.*$/i, '');
+
+      valueAdd = valueAdd
         .replace(
-          /\.*\s*cho|giao|giao cho|không thu hộ|Không thu tiền|Không thu hộ|không thu tiền|không lấy tiền|Không lấy tiền\s*\.?$/i,
+          /\.*\s*cho|giao|giao cho|không thu hộ|Không thu tiền|Không thu hộ|không thu tiền|không lấy tiền|Không lấy tiền|để\s*\.?$/i,
           ''
         )
         .replace(/\s*(với nha|nha|nhé|ạ|à)$/i, '')
@@ -735,6 +816,12 @@ export function ExtractText({ input }: ExtractTextProps) {
         .replace(/^[–—\-_~`!@#$%^&*()+=\[\]{}|\\:";'<>?,.\/\s]+/, '')
         .replace(/^[–—\-]{1,}\s*[–—\-]{1,}\s*/, '')
         .replace(/^[–—\-]\s*[–—\-]\s*/, '')
+        .replace(
+          /\s*(sdt| e | a | c |cod|bác|để lại|nhe|nhá|nhé|nè|gửi lại|gửi tới|đang|bận|nhờ|liên hệ|gọi|nhé|nha|giùm|giúp|bảo vệ|lấy giùm|nhà|gần|chợ|phòng|kho|bãi|lấy hộ|kêu|bấm chuông|nhận dùm|thanh toán|trước khi|sau khi|gặp|người nhà|giao ban ngày|giao tối|giao giúp).*$/i,
+          ''
+        )
+        .trim()
+        .replace(/[.,\s]+$/, '')
         .trim();
 
       result.address = valueAdd;
@@ -746,8 +833,6 @@ export function ExtractText({ input }: ExtractTextProps) {
           /\d{1,4}[\s\p{L}\d\/\\.,\-]{3,}(quận\s*\d+|Q\.?\s*\d+|Q\d+|phường\s*\d+|P\.?\s*\d+|P\d+|tp\.?|thành phố|hcm|tân phú|tân bình|gò vấp|hà nội|đà nẵng|huế|cần thơ|sài gòn)/giu
         ) || cleanedText.match(/\d{1,4}[\/\d\s\p{L},\-\.]{3,}/u);
 
-      console.log('fallbackAddr', fallbackAddr);
-
       if (fallbackAddr) {
         const valueAdd = fallbackAddr[0]
           .replace(addressKeywords, '')
@@ -756,8 +841,35 @@ export function ExtractText({ input }: ExtractTextProps) {
             /\.*\s*cho|giao|giao cho|không thu hộ|Không thu tiền|Không thu hộ|không thu tiền|không lấy tiền|Không lấy tiền\s*\.?$/i,
             ''
           )
+          .replace(
+            /\s*(sdt|cod|để lại|nhe|nhá|nhé|nè|gửi lại|liên hệ|gọi|nhé|nha|giùm|giúp|bảo vệ|lấy giùm|nhà|gần|chợ|phòng|kho|bãi|lấy hộ|kêu|bấm chuông|nhận dùm|thanh toán|trước khi|sau khi|gặp|người nhà|giao ban ngày|giao tối|giao giúp).*$/i,
+            ''
+          )
+          .trim()
+          .replace(/[.,\s]+$/, '')
           .replace(/^[,.\s]+|[,.\s]+$/g, '')
           .replace(/^[:.,\s]+/, '');
+        result.address = valueAdd;
+        resultValue.address = valueAdd;
+      }
+    }
+
+    if (!result.address) {
+      const smartFallback = cleanedText.match(
+        /\d{1,4}[\s\p{L}\d\/\\.,\-]{5,}/u
+      );
+      if (smartFallback) {
+        // Xác suất cao là địa chỉ vì bắt đầu bằng số + nhiều ký tự
+        const valueAdd = smartFallback[0]
+          .replace(addressKeywords, '')
+          .replace(
+            /\s*(cho|giao|giao cho|gọi trước|trước khi|chị ấy|nhe|nha|nhé|ạ|à).*$/i,
+            ''
+          )
+          .trim()
+          .replace(/[.,\s]+$/, '')
+          .replace(/^[,.\s]+|[,.\s]+$/g, '');
+
         result.address = valueAdd;
         resultValue.address = valueAdd;
       }

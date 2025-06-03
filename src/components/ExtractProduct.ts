@@ -86,9 +86,17 @@ function isValidProduct(text: string): boolean {
     return false;
   }
 
-  if (isExcludedPhrase(trimmedText)) {
+  // if (isExcludedPhrase(trimmedText)) {
+  //   return false;
+  // }
+
+  if (isExcludedPhrase(trimmedText) && trimmedText.split(' ').length <= 2) {
     return false;
   }
+
+  // if (nameNegativePatterns.some((pattern) => pattern.test(trimmedText))) {
+  //   return false;
+  // }
 
   const genericWords = ['này', 'đó', 'đây', 'kia', 'đơn', 'hàng', 'kiện'];
   const words = trimmedText.toLowerCase().split(/\s+/);
@@ -164,10 +172,15 @@ const productUnitRegex = new RegExp(
   'iu'
 );
 
+// const productUnitWithoutNumberRegex = new RegExp(
+//   String.raw`\b((?:${productUnits.join(
+//     '|'
+//   )})\s+[a-zA-ZÀ-ỹ\s]{2,50}?)(?=\s*(?:${commonFieldKeywords}|,|\.|$))`,
+//   'iu'
+// );
+
 const productUnitWithoutNumberRegex = new RegExp(
-  String.raw`\b((?:${productUnits.join(
-    '|'
-  )})\s+[a-zA-ZÀ-ỹ\s]{2,50}?)(?=\s*(?:${commonFieldKeywords}|,|\.|$))`,
+  String.raw`\b((?:${productUnits.join('|')})\s+[a-zA-ZÀ-ỹ\s]{2,50}?)(?=\s*(?:${commonFieldKeywords}|,|\.|$))`,
   'iu'
 );
 
@@ -205,9 +218,18 @@ export function extractProductFromText(cleanedText: string): {
     ''
   );
 
-  let productMatch: any = cleanedText.match(productRegexPrimary);
+  // let productMatch: any = cleanedText.match(productUnitRegex);
+
+  // if (!productMatch) productMatch = cleanedText.match(productRegexPrimary);
+  // if (!productMatch) productMatch = cleanedText.match(productRegexFallback);
+
+  let productMatch: any = cleanedText.match(productUnitRegex);
+  if (!productMatch)
+    productMatch = cleanedText.match(productUnitWithoutNumberRegex);
+  if (!productMatch) productMatch = cleanedText.match(productRegexPrimary);
   if (!productMatch) productMatch = cleanedText.match(productRegexFallback);
-  if (!productMatch) productMatch = cleanedText.match(productUnitRegex);
+
+  console.log('productMatch', cleanedText);
 
   if (!productMatch)
     productMatch = cleanedText.match(productUnitWithoutNumberRegex);
@@ -234,6 +256,7 @@ export function extractProductFromText(cleanedText: string): {
       }
     }
   }
+
   if (!productMatch) productMatch = cleanedText.match(productRegexChuyen);
 
   if (!productMatch) productMatch = cleanedText.match(productWithSizeRegex);
@@ -271,7 +294,7 @@ export function extractProductFromText(cleanedText: string): {
 
   if (productMatch) {
     let value = productMatch[1].trim();
-    value = value.replace(/\s*(với nha|nha|nhé|ạ|à)$/i, '');
+    value = value.replace(/\s*(với nha|nha|nhé|ạ|à|ship)$/i, '');
 
     if (isValidProduct(value)) {
       productText = value.replace(
