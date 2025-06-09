@@ -699,7 +699,7 @@ export function ExtractTextAdvanced({ input }: ExtractTextAdvancedProps) {
               .replace(naturalEnding, '')
               .trim();
           }
-          result.resultAddress = rawAddress;
+          result.resultAddress = cleanedAddress;
           result.resultValueAddress = cleanedAddress;
           result.cleanedAddress = cleanedText.replace(rawAddress, '').trim();
 
