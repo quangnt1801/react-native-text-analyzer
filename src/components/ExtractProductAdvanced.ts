@@ -204,6 +204,30 @@ function isInvalidProductPhrase(text: string): boolean {
   return patterns.some((regex) => regex.test(normalized));
 }
 
+const naturalPhrases = [
+  'nhe',
+  'nhé',
+  'ạ',
+  'à',
+  'với nha',
+  'nha',
+  'nhe a',
+  'nhé a',
+  'nhe anh',
+  'nhé anh',
+  'nhanh',
+  'lâu',
+  'chậm',
+  'luôn',
+  'luôn nha',
+  'đó',
+];
+
+function isNaturalPhrase(text: string): boolean {
+  const normalized = text.toLowerCase().trim();
+  return naturalPhrases.includes(normalized);
+}
+
 export function extractProductFromTextAdvanced(cleanedText: string): {
   productText: string;
   productValue: string;
@@ -217,11 +241,6 @@ export function extractProductFromTextAdvanced(cleanedText: string): {
     /\b(giúp em|nhờ|làm ơn|xin|vui lòng)\b/giu,
     ''
   );
-
-  // let productMatch: any = cleanedText.match(productUnitRegex);
-
-  // if (!productMatch) productMatch = cleanedText.match(productRegexPrimary);
-  // if (!productMatch) productMatch = cleanedText.match(productRegexFallback);
 
   let productMatch: any = cleanedText.match(productUnitRegex);
   if (!productMatch)
@@ -244,7 +263,11 @@ export function extractProductFromTextAdvanced(cleanedText: string): {
         `\\b(${commonFieldKeywords})\\b`,
         'iu'
       );
-      if (isValidProduct(productName) && !keywordLikeInfo.test(productName)) {
+      if (
+        isValidProduct(productName) &&
+        !keywordLikeInfo.test(productName) &&
+        !isNaturalPhrase(productName)
+      ) {
         productText = productName;
         productValue = productName;
 
@@ -296,11 +319,11 @@ export function extractProductFromTextAdvanced(cleanedText: string): {
 
     if (isValidProduct(value)) {
       productText = value.replace(
-        /\.*\s*không thu hộ|Không thu tiền|Không thu hộ|không thu tiền|không lấy tiền|Không lấy tiền\s*\.?$/i,
+        /\.*\s*không thu hộ|Không thu tiền|Không thu hộ|không thu tiền|không lấy tiền|Không lấy tiền|giúp đơn\s*\.?$/i,
         ''
       );
       productValue = value.replace(
-        /\.*\s*không thu hộ|Không thu tiền|Không thu hộ|không thu tiền|không lấy tiền|Không lấy tiền\s*\.?$/i,
+        /\.*\s*không thu hộ|Không thu tiền|Không thu hộ|không thu tiền|không lấy tiền|Không lấy tiền|giúp đơn\s*\.?$/i,
         ''
       );
       textWithoutProduct = cleanedText.replace(productMatch[0], '');

@@ -146,28 +146,33 @@ export function ExtractTextAdvanced({ input }: ExtractTextAdvancedProps) {
     const phoneRegexWithKeyword =
       /(?:sđt|số điện thoại|điện thoại|phone|so dien thoai|dien thoai|SDT:|SĐT|dThoai|Gửi tới số điện thoại|Ship giúp|sdt|Sdt)[^\d]*(0[\d.\-\s\*xX]{6,})/i;
 
-    const matchWithKeyword: any = text.match(phoneRegexWithKeyword);
-    if (matchWithKeyword) {
-      const phoneCleaned = matchWithKeyword[1].replace(/[.\-\s]/g, '');
-      return {
-        phone: phoneCleaned,
-        phoneOld: matchWithKeyword[1],
-        cleanedText: text.replace(matchWithKeyword[0], '').trim(),
-      };
+    const phoneRegexDirect = /\b(0[\d.\-\s\*xX]{6,})\b/g;
+
+    const keywordMatch: any = text.match(phoneRegexWithKeyword);
+
+    // Tìm tất cả số điện thoại xuất hiện
+    const allPhones = [...text.matchAll(phoneRegexDirect)];
+
+    let phoneResult: string | undefined;
+    let phoneOld: any | undefined;
+    let cleanedText = text.trim();
+
+    if (allPhones.length > 0) {
+      const firstMatch: any = allPhones[0];
+      phoneOld = firstMatch[1];
+      phoneResult = phoneOld.replace(/[.\-\s]/g, '');
+      cleanedText = cleanedText.replace(firstMatch[0], '').trim();
+    } else if (keywordMatch) {
+      phoneOld = keywordMatch[1];
+      phoneResult = phoneOld.replace(/[.\-\s]/g, '');
+      cleanedText = cleanedText.replace(keywordMatch[0], '').trim();
     }
 
-    const phoneRegex = /\b(0[\d.\-\s\*xX]{6,})\b/;
-    const matchDirect: any = text.match(phoneRegex);
-    if (matchDirect) {
-      const phoneCleaned = matchDirect[1].replace(/[.\-\s]/g, '');
-      return {
-        phone: phoneCleaned,
-        phoneOld: matchDirect[1],
-        cleanedText: text.replace(matchDirect[0], '').trim(),
-      };
-    }
-
-    return { cleanedText: text.trim() };
+    return {
+      phone: phoneResult,
+      phoneOld,
+      cleanedText,
+    };
   };
 
   function extractCodWithNormalizedValue(text: string): {
@@ -176,9 +181,11 @@ export function ExtractTextAdvanced({ input }: ExtractTextAdvancedProps) {
     cleanedCod: string;
   } {
     const codKeywords = [
+      'cod',
       'thu hộ',
       'thu',
       'COD',
+      'cod',
       'tiền thu',
       'tiền thu hộ',
       'cần thu',
@@ -191,7 +198,7 @@ export function ExtractTextAdvanced({ input }: ExtractTextAdvancedProps) {
     ];
 
     const codSpecialPattern = new RegExp(
-      `(thu hộ|thu|COD|tiền thu|tiền thu hộ|cần thu|khách trả|khách thanh toán|giá tiền|tổng tiền|thành tiền|th|COD:)?\\s*(\\d+)\\s*triệu\\s*(rưỡi|mốt|hai|ba|bốn|năm|sáu|bảy|tám|chín)`,
+      `(cod|thu hộ|thu|COD|cod|tiền thu|tiền thu hộ|cần thu|khách trả|khách thanh toán|giá tiền|tổng tiền|thành tiền|th|COD:)?\\s*(\\d+)\\s*triệu\\s*(rưỡi|mốt|hai|ba|bốn|năm|sáu|bảy|tám|chín)`,
       'i'
     );
     const codSpecialMatch: any = text.match(codSpecialPattern);
@@ -449,6 +456,7 @@ export function ExtractTextAdvanced({ input }: ExtractTextAdvancedProps) {
         const weightRaw = match[1] + (match[2] || '');
         const weightValue = normalizeMoneyString(weightRaw);
         const cleanedWeight = text.replace(match[0], '').trim();
+
         return { weightRaw, weightValue, cleanedWeight };
       }
     }
@@ -501,7 +509,7 @@ export function ExtractTextAdvanced({ input }: ExtractTextAdvancedProps) {
   ];
 
   function extractNameFromText(
-    cleanedTextName: any,
+    cleanedTextName: string,
     result: any,
     resultValue: any
   ): { cleanedTextName: string; value: string | null } {
@@ -527,12 +535,16 @@ export function ExtractTextAdvanced({ input }: ExtractTextAdvancedProps) {
       'q[0-9]',
       'p[0-9]',
       'f[0-9]',
-      '[0-9]+[a-zA-Z]?\\s*(?:đường|phố)', // pattern số nhà + đường
+      '[0-9]+[a-zA-Z]?\\s*(?:đường|phố)',
     ].join('|');
 
-    let nameMatch =
+    // const nameNegativePatterns = [
+    //   /\b(không có tên|chưa rõ|ai đó|khách|gửi hàng|giao hàng|ship hàng)\b/i,
+    // ];
+
+    let nameMatch: any =
       cleanedTextName.match(
-        /(?:^|\s)(?:Ship|ship|Khách quen|khách quen|Tên:|tên:|người nhận|giao cho|ship cho|chuyển cho|cho|gửi cho|(?:cho|giao|gửi)?\s*(?:ông|bà|anh|chị|em|chú|cô|bác))(?=\s+)\s+(?!cái|chiếc|áo|váy|quần|đầm|bộ|giày|dép|áo dài|sản phẩm)([\p{L}\s]{2,30}?)(?!\s*(ở|tại|tới|đến)\b)(?=\s*(?:sản phẩm|sp|áo|quần|mã|địa chỉ|gửi|ship|sđt|đt|số|tại|[0-9]|,|\.|:|–|—|-|\n|$))/iu
+        /(?:^|\s)(?:tên|Ship|ship|Khách quen|khách quen|Tên:|tên:|người nhận|giao cho|ship cho|chuyển cho|cho|gửi cho|(?:cho|giao|gửi)?\s*(?:ông|bà|anh|chị|em|chú|cô|bác))(?=\s+)\s+(?!cái|chiếc|áo|váy|quần|đầm|bộ|giày|dép|áo dài|sản phẩm)([\p{L}\s]{2,30}?)(?!\s*(ở|tại|tới|đến)\b)(?=\s*(?:sản phẩm|sp|áo|quần|mã|địa chỉ|gửi|ship|sđt|đt|số|tại|sdt|[0-9]|,|\.|:|–|—|-|\n|$))/iu
       ) ||
       cleanedTextName.match(
         /(?:^|\s)(?:gửi tới|tên[:\s]*)([\p{L}\s]{2,30}?)(?=\s*[,:\.\n–—-]|$)/iu
@@ -548,12 +560,12 @@ export function ExtractTextAdvanced({ input }: ExtractTextAdvancedProps) {
       );
 
     let extractedName: string | null = null;
+
     if (nameMatch) {
       let possibleName = nameMatch[1].trim();
-      possibleName = possibleName.replace(
-        /\s+(nha|nhé|ạ|à|vậy|đó|này|tại|nè|ở)$/i,
-        ''
-      );
+      possibleName = possibleName
+        .replace(/\s+(nha|nhé|ạ|à|vậy|đó|này|nè)$/i, '')
+        .trim();
 
       possibleName = possibleName.replace(/\b(cho|với)\b/giu, '');
 
@@ -561,13 +573,6 @@ export function ExtractTextAdvanced({ input }: ExtractTextAdvancedProps) {
         !new RegExp(`^(?:${locationKeywords})`, 'i').test(possibleName) &&
         !possibleName.match(/^\d+[a-zA-Z]?\s/) &&
         !possibleName.match(/^(?:số|đường|phường|quận)/i);
-
-      // if (!/^[a-z\s]+$/.test(possibleName) && isNotAddress) {
-      //   extractedName = possibleName;
-      //   result.name = extractedName;
-      //   resultValue.name = extractedName;
-      //   cleanedTextName = cleanedTextName.replace(nameMatch[0], '');
-      // }
 
       const nameBlacklist = ['tới', 'đến', 'ở', 'tại'];
 
@@ -577,7 +582,7 @@ export function ExtractTextAdvanced({ input }: ExtractTextAdvancedProps) {
 
       if (
         nameBlacklist.includes(possibleName.toLowerCase()) ||
-        /^[a-z\s]+$/.test(possibleName) || // toàn chữ thường — có thể là mô tả
+        /^[a-z\s]+$/.test(possibleName) ||
         !isNotAddress ||
         isBlacklistedName
       ) {
@@ -588,24 +593,28 @@ export function ExtractTextAdvanced({ input }: ExtractTextAdvancedProps) {
         extractedName = null;
       } else {
         extractedName = possibleName;
+        extractedName = possibleName?.replace(/\s*(ở|tại|tới|đến)\s*$/giu, '');
         result.name = extractedName;
         resultValue.name = extractedName;
-        cleanedTextName = cleanedTextName.replace(nameMatch[0], '');
+        cleanedTextName = cleanedTextName.replace(nameMatch[0], (match) => {
+          return match.replace(nameMatch[1], '').trim();
+        });
       }
     } else {
-      const fallbackName = cleanedTextName.match(/^([\p{L}\s]{2,20}),/u);
+      const fallbackName: any = cleanedTextName.match(/^([\p{L}\s]{2,20}),/u);
       if (fallbackName) {
         let possibleName = fallbackName[1].trim();
 
-        possibleName = possibleName.replace(
-          /\s+(nha|nhé|ạ|à|vậy|đó|này|tại|ở|nè)$/i,
-          ''
-        );
+        possibleName = possibleName
+          .replace(/\s+(nha|nhé|ạ|à|vậy|đó|này|nè|sdt)$/i, '')
+          .trim();
 
         const isNotAddress =
           !new RegExp(`^(?:${locationKeywords})`, 'i').test(possibleName) &&
           !possibleName.match(/^\d+[a-zA-Z]?\s/) &&
           !possibleName.match(/^(?:số|đường|phường|quận)/i);
+
+        possibleName = possibleName.replace(/\b(ở|tại|tới|đến)\b/giu, '');
 
         if (isNotAddress) {
           extractedName = possibleName;
@@ -617,9 +626,117 @@ export function ExtractTextAdvanced({ input }: ExtractTextAdvancedProps) {
     }
 
     return {
-      cleanedTextName: cleanedTextName,
+      cleanedTextName,
       value: extractedName,
     };
+  }
+
+  function extractAddressInfo(text: string) {
+    const addressKeywords =
+      /(nhà|ở|địa chỉ:|địa chỉ|dc|Dia chi|DC|gửi về|giao đến|giao tại|tới|về|Giao gấp|Chuyển tới|Gửi tới địa chỉ|gửi|tại|ở|đến|Giao hàng|đơn|Đơn|em|Em|Gửi|cho|ship|Ship|hàng này|Hàng này|cũ|Cũ|số\s*|Số\s*)/gi;
+
+    const result = {
+      cleanedAddress: '',
+      resultAddress: '',
+      resultValueAddress: '',
+    };
+
+    const naturalEnding =
+      /\s*(sdt|với nha|nhanh nha|nha|nhé|ạ|à|ạ nha|ạ nhé|nha a|nha bạn|nha|nhé| nhe|nhe a|nhé a|nhe anh|nhé anh|nhanh|chậm|lâu)[.,!]*$/i;
+
+    let cleanedText = text.trim();
+
+    const keywordMatches = [...cleanedText.matchAll(addressKeywords)];
+
+    const trailingNoiseRegex =
+      /\b(?:sđt|sdt|phone|số điện thoại|điện thoại|giá trị|sản phẩm|kg|đ|vnđ|₫|[0-9]{9,11})[\s\S]*$/i;
+
+    if (keywordMatches.length > 0) {
+      for (let i = 0; i < keywordMatches.length; i++) {
+        const match: any = keywordMatches[i];
+        const keyword = match[0];
+        const keywordIndex = match.index ?? -1;
+        const afterKeyword = cleanedText
+          .slice(keywordIndex + keyword.length)
+          .trim();
+
+        const addressLikeMatch =
+          afterKeyword.match(
+            /^[:.,\s]*(\d{1,4}[\/\d\s\p{L},\-\.]*?(?:quận|Q\.?|phường|P\.?|tp\.?|thành phố|hcm|hà nội|huế|cần thơ|sài gòn|bình thạnh|đà nẵng|tân bình|tân phú|gò vấp|Bình Thạnh)[\p{L}\d\s,./\-]*)/iu
+          ) || afterKeyword.match(/^[:.,\s]*(\d{1,4}[\/\d\s\p{L},\-\.]{5,})/u);
+
+        if (addressLikeMatch && addressLikeMatch[1]) {
+          let rawAddress = addressLikeMatch[1];
+
+          rawAddress = rawAddress.replace(trailingNoiseRegex, '').trim();
+
+          // let cleanedAddress: any = rawAddress
+          //   .replace(
+          //     /\.*\s*(cho|giao|giao cho|không thu hộ|Không thu tiền|không thu tiền|không lấy tiền|Không lấy tiền|nha|nha a|nha bạn|nhé|ạ|à|với nha)\s*\.?$/gi,
+          //     ''
+          //   )
+          //   .replace(/[,.\s]+$/, '')
+          //   .replace(/^[,.\s]+/, '')
+          //   .replace(/^[–—\-_~`!@#$%^&*()+=\[\]{}|\\:";'<>?,.\/\s]+/, '')
+          //   .replace(/^[–—\-]{1,}\s*[–—\-]{1,}\s*/, '')
+          //   .replace(naturalEnding, '')
+          //   .trim();
+          let cleanedAddress: any = rawAddress
+            .replace(
+              /\.*\s*(cho|giao|giao cho|không thu hộ|Không thu tiền|không thu tiền|không lấy tiền|Không lấy tiền|nha|nha a|nha bạn|nhé|ạ|à|với nha)\s*\.?$/gi,
+              ''
+            )
+            .replace(/[,.\s]+$/, '')
+            .replace(/^[,.\s]+/, '')
+            .replace(/^[–—\-_~`!@#$%^&*()+=\[\]{}|\\:";'<>?,.\/\s]+/, '')
+            .replace(/^[–—\-]{1,}\s*[–—\-]{1,}\s*/, '')
+            .replace(naturalEnding, '')
+            .trim();
+
+          if (cleanedAddress.includes(',')) {
+            cleanedAddress = cleanedAddress
+              .split(',')[0]
+              .replace(naturalEnding, '')
+              .trim();
+          }
+          result.resultAddress = rawAddress;
+          result.resultValueAddress = cleanedAddress;
+          result.cleanedAddress = cleanedText.replace(rawAddress, '').trim();
+
+          return result;
+        }
+      }
+    }
+
+    // 2. Nếu không tìm được, fallback: tìm theo dấu hiệu địa chỉ
+    const fallbackAddr =
+      cleanedText.match(
+        /\d{1,4}[\s\p{L}\d\/\\.,\-]{3,}(quận\s*\d+|Q\.?\s*\d+|Q\d+|phường\s*\d+|P\.?\s*\d+|P\d+|tp\.?|thành phố|hcm|tân phú|tân bình|gò vấp|hà nội|đà nẵng|huế|cần thơ|sài gòn)/giu
+      ) || cleanedText.match(/\d{1,4}[\/\d\s\p{L},\-\.]{3,}/u);
+
+    if (fallbackAddr && fallbackAddr[0]) {
+      let rawAddress = fallbackAddr[0];
+      rawAddress = rawAddress.replace(trailingNoiseRegex, '').trim();
+
+      let cleaned: any = rawAddress
+        .replace(addressKeywords, '')
+        .replace(naturalEnding, '')
+        .replace(/[,.\s]+$/, '')
+        .replace(/^[,.\s]+/, '')
+        .replace(/^[–—\-_~`!@#$%^&*()+=\[\]{}|\\:";'<>?,.\/\s]+/, '')
+        .replace(/^[–—\-]{1,}\s*[–—\-]{1,}\s*/, '')
+        .trim();
+
+      // const cleaned = rawAddress
+      //   .replace(addressKeywords, '')
+      //   .replace(naturalEnding, '')
+      //   .trim();
+      result.resultAddress = rawAddress.trim();
+      result.resultValueAddress = cleaned;
+      result.cleanedAddress = cleanedText.replace(rawAddress, '').trim();
+    }
+
+    return result;
   }
 
   function extractInfoFromText(input: string) {
@@ -643,17 +760,16 @@ export function ExtractTextAdvanced({ input }: ExtractTextAdvancedProps) {
       product: '',
     };
 
-    // const text = input.toLowerCase().replace(/\n/g, ' ');
-
     let cleanedText = input;
 
     const phoneResult = extractPhone(cleanedText);
+
     if (phoneResult.phone) {
       result.phone = phoneResult.phone;
-
+    }
+    if (phoneResult.cleanedText) {
       cleanedText = phoneResult.cleanedText;
     }
-
     if (phoneResult.phoneOld) {
       resultValue.phone = phoneResult.phoneOld;
     }
@@ -727,140 +843,11 @@ export function ExtractTextAdvanced({ input }: ExtractTextAdvancedProps) {
       resultValue.weight = weightRaw;
     }
 
-    const addressKeywords =
-      /(chuyển đến |giao đến|giao tại|tới|về|gửi về|gửi tới|ship|ship đến|ship cho|tại|đến|địa chỉ:|địa chỉ|gửi|giao hàng|nhà |số )/gi;
+    const { resultAddress, resultValueAddress } =
+      extractAddressInfo(cleanedText);
 
-    const keywordMatch = cleanedText.match(addressKeywords);
-
-    if (keywordMatch) {
-      const lastKeyword: any = keywordMatch[keywordMatch.length - 1];
-      const keywordIndex = cleanedText
-        .toLowerCase()
-        .lastIndexOf(lastKeyword.toLowerCase());
-
-      cleanedText = cleanedText
-        .slice(keywordIndex + lastKeyword.length)
-        .replace(/^[:.,\s]+/, '')
-        .trim();
-    }
-
-    // const addressMatch: any =
-    //   cleanedText.match(
-    //     /(\d{1,4}[\/\d\s\w,.\\\-]*?(quận|Q\.?|phường|P\.?|tp\.?|thành phố|hcm|hà nội|huế|cần thơ|sài gòn)[\p{L}\d\s,./\-]*)/giu
-    //   ) || cleanedText.match(/(\d{1,4}[\/\d\s\p{L},\-\.]{3,})/u);
-
-    const addressMatch: any =
-      cleanedText.match(
-        /(\d{1,4}[\/\d\s\w,.\\\-]*?(quận|Q\.?|phường|P\.?|P\d{1,2}|Phường\s*\d+|tp\.?|thành phố|hcm|hà nội|huế|cần thơ|sài gòn)[\p{L}\d\s,./\-]*)/giu
-      ) || cleanedText.match(/(\d{1,4}[\/\d\s\p{L},\-\.]{3,})/u);
-
-    if (addressMatch) {
-      // const valueAdd = cleanedText
-      //   .replace(addressKeywords, '')
-      //   .replace(
-      //     /\.*\s*cho|giao|giao cho|không thu hộ|Không thu tiền|Không thu hộ|không thu tiền|không lấy tiền|Không lấy tiền|để\s*\.?$/i,
-      //     ''
-      //   )
-      //   .replace(/\bđơn(?: số)?\s*\d*\b\s*/i, '')
-      //   .replace(/\bcod\b.*$/i, '')
-      //   .replace(/\s*(với nha|nha|nhé|ạ|à)$/i, '')
-      //   .replace(/^[,.\s]+|[,.\s]+$/g, '')
-      //   .replace(/^[:.,\s]+/, '')
-      //   .replace(/^[–—\-_~`!@#$%^&*()+=\[\]{}|\\:";'<>?,.\/\s]+/, '')
-      //   .replace(/^[–—\-]{1,}\s*[–—\-]{1,}\s*/, '')
-      //   .replace(/^[–—\-]\s*[–—\-]\s*/, '')
-      //   .replace(
-      //     /\s*(sdt| e | a | c |cod|bác|để lại|nhe|nhá|nhé|nè|gửi lại|gửi tới|đang|bận|nhờ|liên hệ|gọi|nhé|nha|giùm|giúp|bảo vệ|lấy giùm|nhà|gần|chợ|phòng|kho|bãi|lấy hộ|kêu|bấm chuông|nhận dùm|thanh toán|trước khi|sau khi|gặp|người nhà|giao ban ngày|giao tối|giao giúp).*$/i,
-      //     ''
-      //   )
-      //   .trim()
-      //   .replace(/[.,\s]+$/, '')
-      //   .trim();
-      // const valueNew = valueAdd
-      //   .replace(/\bđơn(?: số)?\s*\d*\b\s*/i, '')
-      //   .replace(/\bcod\b.*$/i, '')
-      //   .trim();
-
-      // result.address = valueNew;
-      // resultValue.address = valueNew;\
-      let valueAdd = cleanedText.replace(addressKeywords, '');
-
-      // // Xoá "đơn số 6" hoặc "đơn 6" hoặc "đơn số" hoặc "đơn"
-      // valueAdd = valueAdd.replace(/(?:^|[\s,])đơn số(?=\s*\d)/i, ''); // xoá "đơn số" khi phía sau là số
-      // valueAdd = valueAdd.replace(/(?:^|[\s,])đơn(?! số)/i, '');
-
-      // Xoá "cod ..." đến hết câu
-      // valueAdd = valueAdd.replace(/\bcod\b.*$/i, '');
-
-      valueAdd = valueAdd
-        .replace(
-          /\.*\s*cho|giao|giao cho|không thu hộ|Không thu tiền|Không thu hộ|không thu tiền|không lấy tiền|Không lấy tiền|để\s*\.?$/i,
-          ''
-        )
-        .replace(/\s*(với nha|nha|nhé|ạ|à)$/i, '')
-        .replace(/^[,.\s]+|[,.\s]+$/g, '')
-        .replace(/^[:.,\s]+/, '')
-        .replace(/^[–—\-_~`!@#$%^&*()+=\[\]{}|\\:";'<>?,.\/\s]+/, '')
-        .replace(/^[–—\-]{1,}\s*[–—\-]{1,}\s*/, '')
-        .replace(/^[–—\-]\s*[–—\-]\s*/, '')
-        .replace(
-          /\s*(sdt| e | a | c |cod|bác|để lại|nhe|nhá|nhé|nè|gửi lại|gửi tới|đang|bận|nhờ|liên hệ|gọi|nhé|nha|giùm|giúp|bảo vệ|lấy giùm|nhà|gần|chợ|phòng|kho|bãi|lấy hộ|kêu|bấm chuông|nhận dùm|thanh toán|trước khi|sau khi|gặp|người nhà|giao ban ngày|giao tối|giao giúp).*$/i,
-          ''
-        )
-        .trim()
-        .replace(/[.,\s]+$/, '')
-        .trim();
-
-      result.address = valueAdd;
-      resultValue.address = valueAdd;
-      cleanedText = cleanedText.replace(addressMatch[1], '');
-    } else {
-      const fallbackAddr =
-        cleanedText.match(
-          /\d{1,4}[\s\p{L}\d\/\\.,\-]{3,}(quận\s*\d+|Q\.?\s*\d+|Q\d+|phường\s*\d+|P\.?\s*\d+|P\d+|tp\.?|thành phố|hcm|tân phú|tân bình|gò vấp|hà nội|đà nẵng|huế|cần thơ|sài gòn)/giu
-        ) || cleanedText.match(/\d{1,4}[\/\d\s\p{L},\-\.]{3,}/u);
-
-      if (fallbackAddr) {
-        const valueAdd = fallbackAddr[0]
-          .replace(addressKeywords, '')
-          .trim()
-          .replace(
-            /\.*\s*cho|giao|giao cho|không thu hộ|Không thu tiền|Không thu hộ|không thu tiền|không lấy tiền|Không lấy tiền\s*\.?$/i,
-            ''
-          )
-          .replace(
-            /\s*(sdt|cod|để lại|nhe|nhá|nhé|nè|gửi lại|liên hệ|gọi|nhé|nha|giùm|giúp|bảo vệ|lấy giùm|nhà|gần|chợ|phòng|kho|bãi|lấy hộ|kêu|bấm chuông|nhận dùm|thanh toán|trước khi|sau khi|gặp|người nhà|giao ban ngày|giao tối|giao giúp).*$/i,
-            ''
-          )
-          .trim()
-          .replace(/[.,\s]+$/, '')
-          .replace(/^[,.\s]+|[,.\s]+$/g, '')
-          .replace(/^[:.,\s]+/, '');
-        result.address = valueAdd;
-        resultValue.address = valueAdd;
-      }
-    }
-
-    if (!result.address) {
-      const smartFallback = cleanedText.match(
-        /\d{1,4}[\s\p{L}\d\/\\.,\-]{5,}/u
-      );
-      if (smartFallback) {
-        // Xác suất cao là địa chỉ vì bắt đầu bằng số + nhiều ký tự
-        const valueAdd = smartFallback[0]
-          .replace(addressKeywords, '')
-          .replace(
-            /\s*(cho|giao|giao cho|gọi trước|trước khi|chị ấy|nhe|nha|nhé|ạ|à).*$/i,
-            ''
-          )
-          .trim()
-          .replace(/[.,\s]+$/, '')
-          .replace(/^[,.\s]+|[,.\s]+$/g, '');
-
-        result.address = valueAdd;
-        resultValue.address = valueAdd;
-      }
-    }
+    result.address = resultAddress;
+    resultValue.address = resultValueAddress;
 
     return {
       result: result,
